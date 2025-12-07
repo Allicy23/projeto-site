@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quiz Mercedes-Benz</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    padding: 20px;
+    transition: background 0.5s ease-in-out;
+  }
+  #quiz-container {
+    max-width: 600px;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  .question {
+    font-size: 20px;
+    margin-bottom: 15px;
+  }
+  .options button {
+    width: 100%;
+    text-align: left;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+    background: #eee;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  #timer {
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+</style>
+
+</head>
+<body>
+
+<div id="quiz-container">
+  <div id="timer">Tempo: <span id="time-left"></span>s</div>
+  <div class="question" id="question-text"></div>
+  <div class="options" id="options"></div>
+  <div id="result"></div>
+</div>
+
+<script>
+// CONFIGURAÇÕES
+let tempoPorPergunta = 10; // segundos
+
+const quiz = [
+  { pergunta: "Em que ano Karl Benz criou o primeiro automóvel?", alternativas: ["1886", "1910", "1940", "1905"], correta: 0, pontos: 10 },
+  { pergunta: "O que representa a estrela de três pontas da Mercedes-Benz?", alternativas: ["Ar, Mar e Terra", "Luxo, Potência e Velocidade", "Três fundadores", "Três continentes"], correta: 0, pontos: 10 },
+  { pergunta: "Qual é a linha esportiva da Mercedes-Benz?", alternativas: ["RS", "AMG", "GT-R", "Sportline"], correta: 1, pontos: 10 },
+  { pergunta: "Qual desses é um SUV da Mercedes?", alternativas: ["GLA", "Civic", "Astra", "Polo"], correta: 0, pontos: 10 },
+  { pergunta: "Qual é o nome da divisão de carros elétricos da Mercedes?", alternativas: ["E-Power", "Volt", "EQ", "BlueMotion"], correta: 2, pontos: 10 },
+  { pergunta: "Qual desses modelos é um superesportivo da Mercedes?", alternativas: ["AMG GT", "Classe C 180", "Classe B", "GLC 250"], correta: 0, pontos: 10 },
+  { pergunta: "A Mercedes-Benz é originária de qual país?", alternativas: ["Itália", "Estados Unidos", "Alemanha", "Suécia"], correta: 2, pontos: 10 },
+  { pergunta: "O Classe S é conhecido por ser o modelo:", alternativas: ["Popular", "Compacto", "Top de luxo", "SUV compacto"], correta: 2, pontos: 10 },
+  { pergunta: "Qual empresa se fundiu com a Mercedes para formar a Daimler-Benz?", alternativas: ["Audi", "BMW", "Daimler-Motoren-Gesellschaft", "Volkswagen"], correta: 2, pontos: 10 },
+  { pergunta: "Qual tecnologia de segurança foi pioneira na Mercedes?", alternativas: ["Airbag", "ABS", "Câmera de ré", "HUD"], correta: 1, pontos: 10 }
+];
+
+// FUNDOS (imagens reais Mercedes-Benz)
+const fundos = [
+  "url('https://cdn.pixabay.com/photo/2016/03/27/20/58/mercedes-1284369_1280.jpg')",
+  "url('https://cdn.pixabay.com/photo/2015/01/19/13/51/mercedes-604019_1280.jpg')",
+  "url('https://cdn.pixabay.com/photo/2015/01/19/08/33/mercedes-603888_1280.jpg')",
+  "url('https://cdn.pixabay.com/photo/2014/10/22/18/25/mercedes-benz-498244_1280.jpg')",
+  "url('https://cdn.pixabay.com/photo/2017/01/06/19/15/mercedes-1954385_1280.jpg')",
+  "url('https://cdn.pixabay.com/photo/2017/03/27/14/56/mercedes-2178581_1280.jpg')",
+  "url('https://cdn.pixabay.com/photo/2017/06/30/12/39/mercedes-2454014_1280.jpg')",
+  "url('https://cdn.pixabay.com/photo/2019/05/11/13/21/mercedes-amg-4196261_1280.jpg')",
+  "url('https://cdn.pixabay.com/photo/2016/11/19/17/22/mercedes-1845737_1280.jpg')",
+  "url('https://cdn.pixabay.com/photo/2020/06/14/19/01/mercedes-5301625_1280.jpg')"
+];
+
+let indice = 0;
+let pontuacao = 0;
+let tempo;
+let contador;
+
+function iniciarPergunta() {
+  document.body.style.backgroundImage = fundos[indice] || 'none';
+  document.body.style.backgroundSize = 'cover';
+  document.body.style.backgroundPosition = 'center';
+
+  if (indice >= quiz.length) {
+    mostrarResultado();
+    return;
+  }
+
+  const q = quiz[indice];
+  document.getElementById("question-text").textContent = (${indice+1}) ${q.pergunta};
+  const opcoesDiv = document.getElementById("options");
+  opcoesDiv.innerHTML = "";
+
+  q.alternativas.forEach((alt, i) => {
+    const btn = document.createElement("button");
+    btn.textContent = alt;
+    btn.onclick = () => responder(i);
+    opcoesDiv.appendChild(btn);
+  });
+
+  tempo = tempoPorPergunta;
+  document.getElementById("time-left").textContent = tempo;
+  iniciarTimer();
+}
+
+function iniciarTimer() {
+  clearInterval(contador);
+  contador = setInterval(() => {
+    tempo--;
+    document.getElementById("time-left").textContent = tempo;
+
+    if (tempo <= 0) {
+      clearInterval(contador);
+      indice++;
+      iniciarPergunta();
+    }
+  }, 1000);
+}
+
+function responder(i) {
+  clearInterval(contador);
+  const q = quiz[indice];
+  if (i === q.correta) {
+    pontuacao += q.pontos;
+  }
+  indice++;
+  iniciarPergunta();
+}
+
+function mostrarResultado() {
+  document.getElementById("quiz-container").innerHTML = `
+    <h2>Resultado Final</h2>
+    <p>Pontuação total: <strong>${pontuacao}</strong></p>
+    <p>Você respondeu ${quiz.length} perguntas.</p>
+  `;
+}
+
+iniciarPergunta();
+</script>
+
+</body>
+</html>
